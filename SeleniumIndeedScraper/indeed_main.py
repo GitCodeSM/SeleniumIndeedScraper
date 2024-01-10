@@ -299,6 +299,7 @@ class IndeedScraper:
         jobs_urls_list = df_jobs["job_url"]
         soup_list1 = []
 
+        # for loop to get soups for each job url
         for job_link in jobs_urls_list:
             self.driver.get(job_link)
             time.sleep(2)
