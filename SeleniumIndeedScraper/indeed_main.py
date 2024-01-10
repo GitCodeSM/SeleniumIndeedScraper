@@ -118,6 +118,7 @@ class IndeedScraper:
             jobs_data.append(each_job['companyRating'])
             jobs_data.append(each_job['displayTitle'])
             jobs_data.append(each_job['employerResponsive'])
+
             # convert all salary format as integer numbers to yearly
             try:
                 sal_attr = each_job['extractedSalary']
