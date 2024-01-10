@@ -35,3 +35,6 @@ df_test['formattedRelativeTime'].dropna()
 # df_test['hiresNeededExact'].values[1] # str
 df_test['hiresNeededExact'] = df_test.loc[df_test['hiresNeededExact'].notna(), 'hiresNeededExact'].apply(numeric_or_string)
 print(df_test['hiresNeededExact'].values) # perfect
+
+# saving the formatted dataset
+df_test.to_csv("indeed_scraped_data.csv", index=False)
