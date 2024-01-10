@@ -118,6 +118,7 @@ class IndeedScraper:
             jobs_data.append(each_job['companyRating'])
             jobs_data.append(each_job['displayTitle'])
             jobs_data.append(each_job['employerResponsive'])
+            # convert all salary format as integer numbers to yearly
             try:
                 sal_attr = each_job['extractedSalary']
                 max_sal = sal_attr['max']
@@ -148,7 +149,9 @@ class IndeedScraper:
                 jobs_data.append(each_job['hiringMultipleCandidatesModel']['hiresNeededExact'])
             except:
                 jobs_data.append('')
+            # salary range snippet as text
             jobs_data.append(each_job['salarySnippet'].get('text', ''))
+            # loop through attributes likes shifts, remote or not, benefits, type etc. as labels
             for attribute in each_job['taxonomyAttributes']:
                 if attribute['attributes'] == []:
                     jobs_data.append('')
@@ -170,9 +173,11 @@ class IndeedScraper:
         # len(all_jobs_data) # 15
         print(all_jobs_data[10]) # perfect
 
+        # collect page numbers
         pagination_tags = soupy.find_all("li", class_="css-227srf eu4oa1w0")
         pages = [tag.getText(strip=True) for tag in pagination_tags if tag.getText(strip=True) != '']
 
+        # loop through page numbers to add offset for each page which is 0 for first and increment to 10 for each
         offset = 10
         page_urls = []
         for num in pages[1:]:
@@ -192,6 +197,7 @@ class IndeedScraper:
             _list_: _list of all next pages as BeautifulSoup soup objects_
         """        
         soup_list = []
+        # loop through page urls and collect soups
         for link in page_urls:
             self.driver.get(link)
             time.sleep(2)
@@ -213,7 +219,7 @@ class IndeedScraper:
             _dataframe_: _a complete dataframe of all the jobs data of the main page and the next pages_
         """        
         all_jobs_data1 = []
-
+        # loop through soups
         for soup_obj in soup_list:
             script_text = soup_obj.find("script", attrs={"id":"mosaic-data"}).getText(strip=True)
             script_job_data = re.findall('window.mosaic.providerData\["mosaic-provider-jobcards"\]=(\{.+?\});', script_text)
@@ -223,6 +229,7 @@ class IndeedScraper:
             jobs_list1 = json_blob_data['metaData']['mosaicProviderJobCardsModel']['results']
             # print(jobs_page_list) # working
 
+            # loop through job list in a page's soup
             for each_job in jobs_list1: # https://in.indeed.com/viewjob?cmp=MNR-Solutions&t=Data+Scientist&jk=
                 jobs_data1 = []
                 # print('\n', jobs_list.index(each_job)) 
@@ -230,6 +237,8 @@ class IndeedScraper:
                 jobs_data1.append(each_job['companyRating'])
                 jobs_data1.append(each_job['displayTitle'])
                 jobs_data1.append(each_job['employerResponsive'])
+
+                # formatting all pay to yearly format
                 try:
                     sal_attr = each_job['extractedSalary']
                     max_sal = sal_attr['max']
@@ -261,6 +270,8 @@ class IndeedScraper:
                 except:
                     jobs_data1.append('')
                 jobs_data1.append(each_job['salarySnippet'].get('text', ''))
+
+                # loop through attributes likes shifts, remote or not, benefits, type etc. as labels
                 for attribute in each_job['taxonomyAttributes']:
                     if attribute['attributes'] == []:
                         jobs_data1.append('')
@@ -276,6 +287,7 @@ class IndeedScraper:
                 # print(len(jobs_data1)) # 20
                 all_jobs_data1.append(jobs_data1)
 
+        # extending data for the page 1 to the data collected for the rest of the pages
         all_jobs_data1.extend(all_jobs_data)
         print(len(all_jobs_data1)) # 75
         print(all_jobs_data1[70])
@@ -299,10 +311,11 @@ class IndeedScraper:
         jobs_urls_list = df_jobs["job_url"]
         soup_list1 = []
 
-        # for loop to get soups for each job url
+        # loop through soups
         for job_link in jobs_urls_list:
             self.driver.get(job_link)
             time.sleep(2)
+            # close the pop notification
             try:
                 WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "button.popover-x-button-close.icl-CloseButton"))).click()
             except:
@@ -325,13 +338,14 @@ class IndeedScraper:
             _dataframe_: _complete dataframe with job descriptions added to the dataframe_
         """        
         job_page_list1 = []
+        # loop through soups
         for page_soup in soup_list1:
 
             job_data_list = []
 
             job_desc = page_soup.find("div", attrs={"id":"jobDescriptionText"})
-            # type(job_desc) # working
-            # job_desc
+            # print(type(job_desc)) # working
+            # print(job_desc)
             list1 = job_desc.find_all("li")
             list1_desc = [tag.getText(strip=True) for tag in list1]
             job_data_list.append(list1_desc)
@@ -341,6 +355,7 @@ class IndeedScraper:
             job_data_list.append(list2_desc)
             job_page_list1.append(job_data_list)
 
+        # adding descriptions dataframe to the main data dataframe
         print(len(job_page_list1)) # 75
         columns2 = ['job_desc1', 'job_desc2']
         df_desc = pd.DataFrame(job_page_list1, columns=columns2)
