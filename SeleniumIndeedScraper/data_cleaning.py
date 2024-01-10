@@ -6,8 +6,12 @@ def to_numeric(x):
             return int(s)
         elif '+' in s:
             return int(s.rstrip('+'))
-        else:
-            return x
+
+def numeric_or_string(x):
+    if x.isnumeric():
+        return int(x)
+    else:
+        return x
 
 df_test = pd.read_csv("indeed_scraped_data.csv")
 
@@ -15,7 +19,7 @@ print(df_test.columns)
 
 first = to_numeric('Active 4 days ago')
 second = to_numeric('30+ days ago')
-third = to_numeric('RECURRING_HIRE')
+third = numeric_or_string('RECURRING_HIRE')
 
 print(first)
 print(second)
@@ -29,5 +33,5 @@ df_test['formattedRelativeTime'].dropna()
 
 # df_test['hiresNeededExact'].dropna()
 # df_test['hiresNeededExact'].values[1] # str
-df_test['hiresNeededExact'] = df_test.loc[df_test['hiresNeededExact'].notna(), 'hiresNeededExact'].apply(to_numeric)
+df_test['hiresNeededExact'] = df_test.loc[df_test['hiresNeededExact'].notna(), 'hiresNeededExact'].apply(numeric_or_string)
 print(df_test['hiresNeededExact'].values) # perfect
